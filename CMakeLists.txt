@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.5)
+project(Voxel)
+
+set(CMAKE_BINARY_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(CMAKE_PREFIX_PATH /home/will/.local/mambaforge/envs/cxx)
+include_directories(${CMAKE_PREFIX_PATH}/include)
+link_directories(${CMAKE_PREFIX_PATH}/lib)
+find_package(glfw3 REQUIRED)
+find_package(glad  REQUIRED)
+find_package(glm   REQUIRED)
+find_package(Boost REQUIRED)
+
+add_definitions(-DGLFW_INCLUDE_NONE)
+add_executable(Voxel main.cpp renderVoxel.glsl genVoxel.glsl)
+target_link_libraries(${PROJECT_NAME} glfw glad)
+target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
