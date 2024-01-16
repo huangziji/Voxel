@@ -48,8 +48,8 @@ vec4 castRay(in vec3 ro, in vec3 rd, vec3 nor)
     for (;;)
     {
         vec3 sp = (vec3(id)+.5)/vec3(res);
-        //hit = texelFetch( iChannel1, id/voxelSize, lvl ).r > 0.0001;
-        hit = textureLod( iChannel1, sp, float(lvl) ).r > 0.0001;
+        float val = textureLod( iChannel1, sp, float(lvl) ).r;
+        hit = val != 0;
 
         if (hit)
         {
@@ -79,7 +79,7 @@ vec4 castRay(in vec3 ro, in vec3 rd, vec3 nor)
             break;
     }
 
-    return vec4(steps, mask*float(hit));
+    return vec4(distance(ro, id), mask*float(hit));
 }
 
 layout (local_size_x = 16, local_size_y = 9) in;
@@ -98,21 +98,24 @@ void main(void)
     vec3 rd = ca * normalize(vec3(uv, 1.2));
 
     vec3 col = vec3(0);
-
-    vec3 size = vec3(textureSize(iChannel1, 0));
-#if 1
-    vec4 ret = castRay(ro+size*.5, rd, vec3(0));
-    col += ret.x/150.;
+    vec3 res = vec3(textureSize(iChannel1, 0));
+#if 0
+    vec4 ret = castRay(ro+res*.5, rd, vec3(0));
+//    col += ret.x/150.;
     col += dot(ret.yzw, vec3(.5,.7,.9))*.7;
+
+    col += 0.3 * mix(vec3(1,0,0), vec3(0,1,0), floor(log2(ret.x))/6.);
+    col = pow(col, vec3(2.4545));
+
 #else
     vec3 nor;
     vec2 tt = boxIntersection(ro, rd, vec3(.5), nor);
     if (tt.y > tt.x)
     {
         vec3 pos = ro + rd*max(tt.x, 0.); // start with ro if ro is inside of box
-        vec4 ret = castRay(( pos+.5 )*size, rd, nor);
+        vec4 ret = castRay(( pos+.5 )*res, rd, nor);
 
-        col += ret.x/150.;
+//        col += ret.x/150.;
         col += dot(ret.yzw, vec3(.5,.7,.9))*.7;
     }
 #endif

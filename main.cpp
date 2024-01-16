@@ -55,7 +55,14 @@ int main()
     glBindTexture(GL_TEXTURE_3D, tex2);
     glTexStorage3D(GL_TEXTURE_3D, 5, GL_R8, Size,Size,Size);
 
-    glfwSwapInterval(0); // vsync
+    int counter = 0;
+    GLuint abo;
+    glGenBuffers(1, &abo);
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, abo);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof counter, &counter, GL_STATIC_DRAW);
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, abo);
+
+//    glfwSwapInterval(0); // vsync
     while (!glfwWindowShouldClose(window1))
     {
         bool dirty3 = loadShader3x(&lastModTime3, prog3, "../Voxel/genVoxel.glsl");
@@ -65,8 +72,11 @@ int main()
         {
             glBindImageTexture(0, tex2, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R8);
             glUseProgram(prog3);
-            glDispatchCompute(8,8,8);
+            glDispatchCompute(Size/8,Size/8,Size/8);
             glGenerateMipmap(GL_TEXTURE_3D);
+
+            glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof counter, &counter);
+            printf("counter : %d\n", counter);
         }
 
         static float t0 = 0;

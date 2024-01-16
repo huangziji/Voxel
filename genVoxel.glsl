@@ -33,8 +33,8 @@ float sdBox( vec3 p, float b )
 
 float sdTorus( vec3 p, vec2 t )
 {
-  vec2 q = vec2(length(p.xz)-t.x,p.y);
-  return length(q)-t.y;
+    vec2 q = vec2(length(p.xz)-t.x,p.y);
+    return length(q)-t.y;
 }
 
 float map(vec3 pos)
@@ -47,11 +47,30 @@ float map(vec3 pos)
 }
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
-layout (binding = 0, r8) writeonly uniform image3D outImage;
+layout (binding = 0, r8) writeonly uniform image3D outImage[5];
+layout (binding = 0) uniform atomic_uint counter;
 void main()
 {
-    const vec3 off = vec3(1), sca = off*2./64.;
-    ivec3 p = ivec3(gl_GlobalInvocationID.xyz);
-    float d = map(vec3(p)*sca - off);
-    imageStore(outImage, p, vec4(d < 0));
+    const vec3 vertmap[] = {
+        {0,0,0},{1,0,0},{0,1,0},{1,1,0},
+        {0,0,1},{1,0,1},{0,1,1},{1,1,1},
+    };
+
+    vec3 res = vec3(imageSize(outImage[0]));
+    ivec3 id = ivec3(gl_GlobalInvocationID.xyz);
+
+    uint mask = 0;
+    for (int i=0; i<8; i++)
+    {
+        float d = map((vec3(id)+vertmap[i])/res *2.-1.);
+        mask |= int(d < 0) << i;
+    }
+
+    bool solid = mask != 0xff && mask != 0;
+    imageStore(outImage[0], id, vec4( solid ));
+
+    if (solid)
+    {
+        atomicCounterIncrement(counter);
+    }
 }
