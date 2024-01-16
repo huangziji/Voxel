@@ -16,9 +16,9 @@ int main()
     glfwSetErrorCallback(error_callback);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+//    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-    const int RES_X = 16*40, RES_Y = 9*40;
+    const int screenScale = 40, RES_X = 16*screenScale, RES_Y = 9*screenScale;
     GLFWwindow *window1;
     { // window1
         int screenWidth, screenHeight;
@@ -29,7 +29,6 @@ int main()
         glfwMakeContextCurrent(window1);
         glfwSetWindowPos(window1, screenWidth-RES_X, 0);
         glfwSetWindowAttrib(window1, GLFW_FLOATING, GLFW_TRUE);
-        glfwSwapInterval(1);
         gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     }
 
@@ -56,6 +55,7 @@ int main()
     glBindTexture(GL_TEXTURE_3D, tex2);
     glTexStorage3D(GL_TEXTURE_3D, 5, GL_R8, Size,Size,Size);
 
+    glfwSwapInterval(0); // vsync
     while (!glfwWindowShouldClose(window1))
     {
         bool dirty3 = loadShader3x(&lastModTime3, prog3, "../Voxel/genVoxel.glsl");
@@ -69,12 +69,26 @@ int main()
             glGenerateMipmap(GL_TEXTURE_3D);
         }
 
+        static float t0 = 0;
+        static uint32_t frame = 0;
+        ++frame;
+        float t1 = glfwGetTime();
+        float dt = t1 - t0; t0 = t1;
+        float fps;
+        if ((frame & 0xf) == 0)
+        {
+            fps = 1./dt;
+        }
+        char title[32];
+        sprintf(title, "%4.2f\t\t%.1f fps\t\t%d x %d", t1, fps, RES_X, RES_Y);
+        glfwSetWindowTitle(window1, title);
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_3D, tex2);
         glBindImageTexture(0, tex1, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
         glUseProgram(prog2);
-        glProgramUniform1f(prog2, 0, glfwGetTime());
-        glDispatchCompute(40,40,1);
+        glProgramUniform1f(prog2, 0, t1);
+        glDispatchCompute(screenScale,screenScale,1);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex1);

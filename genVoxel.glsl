@@ -1,4 +1,30 @@
 #version 430
+
+float hash12(vec2 p)
+{
+    vec3 p3  = fract(vec3(p.xyx) * .1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float noise( in vec2 x )
+{
+    vec2 p = floor(x);
+    vec2 w = fract(x);
+    #if 1
+    vec2 u = w*w*w*(w*(w*6.0-15.0)+10.0);
+    #else
+    vec2 u = w*w*(3.0-2.0*w);
+    #endif
+
+    float a = hash12(p+vec2(0,0));
+    float b = hash12(p+vec2(1,0));
+    float c = hash12(p+vec2(0,1));
+    float d = hash12(p+vec2(1,1));
+
+    return -1.0+2.0*(a + (b-a)*u.x + (c-a)*u.y + (a - b - c + d)*u.x*u.y);
+}
+
 float sdBox( vec3 p, float b )
 {
     vec3 q = abs(p) - b;
@@ -13,9 +39,10 @@ float sdTorus( vec3 p, vec2 t )
 
 float map(vec3 pos)
 {
-    float d = sdBox(pos, .5) - .02;
-    float d2 = sdTorus(pos, vec2(.65,.2));
-    d = min(d, d2);
+    float d = pos.y - noise(pos.xz * 2.) * .3 + .0;
+//    float d = sdBox(pos, .5) - .02;
+//    float d2 = sdTorus(pos, vec2(.85,.2));
+//    d = max(-d, d2);
     return d;
 }
 
