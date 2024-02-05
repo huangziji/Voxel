@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(Voxel)
 
 set(CMAKE_BINARY_DIR ${CMAKE_CURRENT_LIST_DIR})
-set(CMAKE_PREFIX_PATH /home/will/.local/mambaforge/envs/cxx)
+set(CMAKE_PREFIX_PATH /home/ziji/.local/micromamba/envs/cxx)
 include_directories(${CMAKE_PREFIX_PATH}/include)
 link_directories(${CMAKE_PREFIX_PATH}/lib)
 find_package(glfw3 REQUIRED)

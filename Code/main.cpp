@@ -37,7 +37,7 @@ int main()
     int loadShader3x(long *, GLuint prog, const char *filename);
 
     GLuint prog1 = glCreateProgram();
-    assert(loadShader1(prog1, "../Voxel/base.frag") == 0);
+    assert(loadShader1(prog1, "../Code/base.frag") == 0);
 
     GLuint prog2 = glCreateProgram();
     GLuint prog3 = glCreateProgram();
@@ -65,8 +65,8 @@ int main()
 //    glfwSwapInterval(0); // vsync
     while (!glfwWindowShouldClose(window1))
     {
-        bool dirty3 = loadShader3x(&lastModTime3, prog3, "../Voxel/genVoxel.glsl");
-        loadShader3x(&lastModTime2, prog2, "../Voxel/renderVoxel.glsl");
+        bool dirty3 = loadShader3x(&lastModTime3, prog3, "../Code/genVoxel.glsl");
+        loadShader3x(&lastModTime2, prog2, "../Code/renderVoxel.glsl");
 
         if (dirty3)
         {
